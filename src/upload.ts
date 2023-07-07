@@ -67,10 +67,10 @@ export const upload = async (
 
             const { onSuccess } = video
             if (typeof onSuccess === 'function') {
-                onSuccess(link)
+                onSuccess(link!)
             }
 
-            uploadedYTLink.push(link)
+            uploadedYTLink.push(link!)
         }
 
         await browser.close()
@@ -118,11 +118,11 @@ async function uploadVideo(videoJSON: Video, messageTransport: MessageTransport)
     const addVideoBtnXPath = '//*[@id="text-item-0"]/ytcp-ve/div/div/yt-formatted-string'
     if ((await page.waitForXPath(createBtnXPath, { timeout: 5000 }).catch(() => null))) {
         const createBtn = await page.$x(createBtnXPath);
-        await createBtn[0].click();
+        await (createBtn[0] as ElementHandle<Element>).click();
     }
     if ((await page.waitForXPath(addVideoBtnXPath, { timeout: 5000 }).catch(() => null))) {
         const addVideoBtn = await page.$x(addVideoBtnXPath);
-        await addVideoBtn[0].click();
+        await (addVideoBtn[0] as ElementHandle<Element>).click();
     }
     for (let i = 0; i < 2; i++) {
         try {
@@ -148,7 +148,7 @@ async function uploadVideo(videoJSON: Video, messageTransport: MessageTransport)
     const selectBtn = await page.$x(selectBtnXPath)
     const [fileChooser] = await Promise.all([
         page.waitForFileChooser(),
-        selectBtn[0].click() // button that triggers file selection
+        (selectBtn[0] as ElementHandle<Element>).click() // button that triggers file selection
     ])
     await fileChooser.accept([pathToFile])
     // Setup onProgress
@@ -215,7 +215,7 @@ async function uploadVideo(videoJSON: Video, messageTransport: MessageTransport)
         const thumbBtn = await page.$x(thumbnailChooserXpath)
         const [thumbChooser] = await Promise.all([
             page.waitForFileChooser(),
-            thumbBtn[0].click() // button that triggers file selection
+            (thumbBtn[0] as ElementHandle<Element>).click() // button that triggers file selection
         ])
         await thumbChooser.accept([thumb])
     }
@@ -232,7 +232,7 @@ async function uploadVideo(videoJSON: Video, messageTransport: MessageTransport)
     await textBoxes[1].type(description.substring(0, maxDescLen))
 
     const childOption = await page.$x('//*[contains(text(),"No, it\'s")]')
-    await childOption[0].click()
+    await (childOption[0] as ElementHandle<Element>).click()
     
     // There is no reason for this to be called. Also you should be using #toggle-button not going by the text...
     // const moreOption = await page.$x("//*[normalize-space(text())='Show more']")
@@ -244,7 +244,7 @@ async function uploadVideo(videoJSON: Video, messageTransport: MessageTransport)
         // Selecting playlist
         for (let i = 0; i < 2; i++) {
             try {
-                await page.evaluate((el) => el.click(), playlist[0])
+                await page.evaluate((el) => (<HTMLElement>el).click(), playlist[0])
                 // Type the playlist name to filter out
                 await page.waitForSelector('#search-input')
                 await page.focus(`#search-input`)
@@ -254,27 +254,27 @@ async function uploadVideo(videoJSON: Video, messageTransport: MessageTransport)
                 const playlistToSelectXPath = "//*[normalize-space(text())=" + escapedPlaylistName + "]";
                 await page.waitForXPath(playlistToSelectXPath, { timeout: 10000 })
                 const playlistNameSelector = await page.$x(playlistToSelectXPath)
-                await page.evaluate((el) => el.click(), playlistNameSelector[0])
+                await page.evaluate((el) => (<HTMLElement>el).click(), playlistNameSelector[0])
                 createplaylistdone = await page.$x("//*[normalize-space(text())='Done']")
-                await page.evaluate((el) => el.click(), createplaylistdone[0])
+                await page.evaluate((el) => (<HTMLElement>el).click(), createplaylistdone[0])
                 break
             } catch (error) {
                 // Creating new playlist
                 // click on playlist dropdown
-                await page.evaluate((el) => el.click(), playlist[0])
+                await page.evaluate((el) => (<HTMLElement>el).click(), playlist[0])
                 // click New playlist button
                 const newPlaylistXPath =
                     "//*[normalize-space(text())='New playlist'] | //*[normalize-space(text())='Create playlist']"
                 await page.waitForXPath(newPlaylistXPath)
                 const createplaylist = await page.$x(newPlaylistXPath)
-                await page.evaluate((el) => el.click(), createplaylist[0])
+                await page.evaluate((el) => (<HTMLElement>el).click(), createplaylist[0])
                 // Enter new playlist name
                 await page.keyboard.type(' ' + playlistName.substring(0, 148))
                 // click create & then done button
                 const createplaylistbtn = await page.$x("//*[normalize-space(text())='Create']")
-                await page.evaluate((el) => el.click(), createplaylistbtn[1])
+                await page.evaluate((el) => (<HTMLElement>el).click(), createplaylistbtn[1])
                 createplaylistdone = await page.$x("//*[normalize-space(text())='Done']")
-                await page.evaluate((el) => el.click(), createplaylistdone[0])
+                await page.evaluate((el) => (<HTMLElement>el).click(), createplaylistdone[0])
             }
         }
     }
@@ -319,14 +319,14 @@ async function uploadVideo(videoJSON: Video, messageTransport: MessageTransport)
     // Selecting video language
     if (videoLang) {
         const langHandler = await page.$x("//*[normalize-space(text())='Video language']")
-        await page.evaluate((el) => el.click(), langHandler[0])
+        await page.evaluate((el) => (<HTMLElement>el).click(), langHandler[0])
         // translate(text(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz')
         const langName = await page.$x(
             '//*[normalize-space(translate(text(),"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz"))=\'' +
             videoLang.toLowerCase() +
             "']"
         )
-        await page.evaluate((el) => el.click(), langName[langName.length - 1])
+        await page.evaluate((el) => (<HTMLElement>el).click(), langName[langName.length - 1])
     }
 
     // Setting Game Title ( Will also set Category to gaming )
@@ -339,7 +339,7 @@ async function uploadVideo(videoJSON: Video, messageTransport: MessageTransport)
 
     await page.waitForXPath(nextBtnXPath);
     next = await page.$x(nextBtnXPath);
-    await next[0].click();
+    await (next[0] as ElementHandle<Element>).click();
 
     if (videoJSON.isChannelMonetized) {
         try {
@@ -370,7 +370,7 @@ async function uploadVideo(videoJSON: Video, messageTransport: MessageTransport)
 
             await page.waitForXPath(nextBtnXPath);
             next = await page.$x(nextBtnXPath);
-            await next[0].click();
+            await (next[0] as ElementHandle<Element>).click();
         } catch { }
 
         try {
@@ -394,7 +394,7 @@ async function uploadVideo(videoJSON: Video, messageTransport: MessageTransport)
 
             await page.waitForXPath(nextBtnXPath);
             next = await page.$x(nextBtnXPath);
-            await next[0].click();
+            await (next[0] as ElementHandle<Element>).click();
 
             await page.waitForTimeout(1500);
         } catch {}
@@ -404,11 +404,11 @@ async function uploadVideo(videoJSON: Video, messageTransport: MessageTransport)
     await page.waitForXPath(nextBtnXPath)
     // click next button
     next = await page.$x(nextBtnXPath)
-    await next[0].click()
+    await (next[0] as ElementHandle<Element>).click()
     await page.waitForXPath(nextBtnXPath)
     // click next button
     next = await page.$x(nextBtnXPath)
-    await next[0].click()
+    await (next[0] as ElementHandle<Element>).click()
 
     if (videoJSON.publishType) {
         await page.waitForSelector("#privacy-radios *[name=\""+videoJSON.publishType+"\"]", { visible: true });
@@ -432,7 +432,7 @@ async function uploadVideo(videoJSON: Video, messageTransport: MessageTransport)
     let uploadedLink
     do {
         await page.waitForTimeout(500)
-        uploadedLink = await page.evaluate((e) => e.getAttribute('href'), uploadedLinkHandle)
+        uploadedLink = await page.evaluate((e) => (<HTMLElement>e).getAttribute('href'), uploadedLinkHandle)
     } while (uploadedLink === videoBaseLink || uploadedLink === shortVideoBaseLink)
 
     const closeDialogXPath = uploadAsDraft ? saveCloseBtnXPath : publishXPath
@@ -440,7 +440,7 @@ async function uploadVideo(videoJSON: Video, messageTransport: MessageTransport)
     for (let i = 0; i < 10; i++) {
         try {
             closeDialog = await page.$x(closeDialogXPath)
-            await closeDialog[0].click()
+            await (closeDialog[0] as ElementHandle<Element>).click()
             break
         } catch (error) {
             await page.waitForTimeout(5000)
@@ -559,7 +559,7 @@ const publishComment = (comment: Comment) => {
             await page.focus(`#placeholder-area`)
             const commentBox = await page.$x('//*[@id="placeholder-area"]')
             await commentBox[0].focus()
-            await commentBox[0].click()
+            await (commentBox[0] as ElementHandle<Element>).click()
             await commentBox[0].type(cmt.substring(0, 10000))
 
             page.exposeFunction('commentResolve', resolve)
@@ -703,7 +703,7 @@ const updateVideoInfo = async (videoJSON: VideoToEdit, messageTransport: Message
     }
 
     let edit = await page.$x(editXpath)
-    await edit[0].click()
+    await (edit[0] as ElementHandle<Element>).click()
     const titleE = '//*[@id="textbox"]'
     await page.waitForXPath(titleE, { timeout: 70000 })
     await page.waitForFunction('document.querySelectorAll(\'[id="textbox"]\').length > 1')
@@ -763,7 +763,7 @@ const updateVideoInfo = async (videoJSON: VideoToEdit, messageTransport: Message
     if (playlistName) {
         for (let i = 0; i < 2; i++) {
             try {
-                await page.evaluate((el) => el.click(), playlist[0])
+                await page.evaluate((el) => (<HTMLElement>el).click(), playlist[0])
                 await page.waitForSelector('#search-input')
                 await page.focus(`#search-input`)
                 await page.type(`#search-input`, playlistName)
@@ -773,27 +773,27 @@ const updateVideoInfo = async (videoJSON: VideoToEdit, messageTransport: Message
 
                 await page.waitForXPath(playlistToSelectXPath, { timeout: 10000 })
                 const playlistNameSelector = await page.$x(playlistToSelectXPath)
-                await page.evaluate((el) => el.click(), playlistNameSelector[0])
+                await page.evaluate((el) => (<HTMLElement>el).click(), playlistNameSelector[0])
                 createplaylistdone = await page.$x("//*[normalize-space(text())='Done']")
-                await page.evaluate((el) => el.click(), createplaylistdone[0])
+                await page.evaluate((el) => (<HTMLElement>el).click(), createplaylistdone[0])
                 break
             } catch (error) {
-                await page.evaluate((el) => el.click(), playlist[0])
+                await page.evaluate((el) => (<HTMLElement>el).click(), playlist[0])
                 const newPlaylistXPath =
                     "//*[normalize-space(text())='New playlist'] | //*[normalize-space(text())='Create playlist']"
                 await page.waitForXPath(newPlaylistXPath)
                 const createplaylist = await page.$x(newPlaylistXPath)
-                await page.evaluate((el) => el.click(), createplaylist[0])
+                await page.evaluate((el) => (<HTMLElement>el).click(), createplaylist[0])
                 await page.keyboard.type(' ' + playlistName.substring(0, 148))
                 const createplaylistbtn = await page.$x("//*[normalize-space(text())='Create']")
-                await page.evaluate((el) => el.click(), createplaylistbtn[1])
+                await page.evaluate((el) => (<HTMLElement>el).click(), createplaylistbtn[1])
                 createplaylistdone = await page.$x("//*[normalize-space(text())='Done']")
-                await page.evaluate((el) => el.click(), createplaylistdone[0])
+                await page.evaluate((el) => (<HTMLElement>el).click(), createplaylistdone[0])
             }
         }
     }
     const moreOption = await page.$x("//*[normalize-space(text())='Show more']")
-    await moreOption[0].click()
+    await (moreOption[0] as ElementHandle<Element>).click()
     if (tags) {
         await page.focus(`[aria-label="Tags"]`)
         await page.type(`[aria-label="Tags"]`, tags.join(', ').substring(0, 495) + ', ')
@@ -805,13 +805,13 @@ const updateVideoInfo = async (videoJSON: VideoToEdit, messageTransport: Message
     }
     if (videoLang) {
         const langHandler = await page.$x("//*[normalize-space(text())='Video language']")
-        await page.evaluate((el) => el.click(), langHandler[0])
+        await page.evaluate((el) => (<HTMLElement>el).click(), langHandler[0])
         const langName = await page.$x(
             '//*[normalize-space(translate(text(),"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz"))=\'' +
             videoLang.toLowerCase() +
             "']"
         )
-        await page.evaluate((el) => el.click(), langName[langName.length - 1])
+        await page.evaluate((el) => (<HTMLElement>el).click(), langName[langName.length - 1])
     }
     // Setting Game Title ( Will also set Category to gaming )
     if ( gameTitleSearch ) {
@@ -969,7 +969,7 @@ async function changeHomePageLangIfNeeded(localPage: Page) {
     }
 
     const selectedLang = await localPage.evaluate(
-        (langMenuItemSelector) => document.querySelector(langMenuItemSelector).innerText,
+        (langMenuItemSelector) => (<HTMLElement>document.querySelector(langMenuItemSelector)).innerText,
         langMenuItemSelector
     )
 
@@ -1223,7 +1223,7 @@ async function changeChannel(channelName: string) {
         `//*[normalize-space(text())='${channelName}']`;
     const element = await page.waitForXPath(channelNameXPath);
 
-    await element!.click()
+    await (element! as ElementHandle<Element>).click()
 
     await page.waitForNavigation({
         waitUntil: "networkidle0"
